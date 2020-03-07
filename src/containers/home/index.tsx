@@ -1,56 +1,44 @@
-import {Button, Card, Input, Text} from '@ui-kitten/components';
+import {Card, Layout, Text} from '@ui-kitten/components';
 import React, {Component} from 'react';
 import {inject, observer} from 'mobx-react';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-Icon.loadFont();
-
-import {TextInputMask} from 'react-native-masked-text';
 
 import HomeStore from '../../stores/home.store';
+import {ROUTES_NAMES} from '../../routes';
+import {ScrollView} from 'react-native-gesture-handler';
 import {StyleSheet} from 'react-native';
 
 interface Props {
   homeStore: HomeStore;
+  navigation: any;
 }
 
 @inject('homeStore')
 @observer
 export default class Home extends Component<Props> {
+  async componentDidMount() {
+    const {getFilms} = this.props.homeStore;
+    await getFilms();
+  }
+
   render() {
-    const {
-      etanol,
-      gasolina,
-      resultado,
-      calculate,
-      handleForm,
-    } = this.props.homeStore;
+    const {films} = this.props.homeStore;
+
+    const navigateScreen = (id: number) => {
+      const {navigate} = this.props.navigation;
+      navigate(ROUTES_NAMES.Home, {id});
+    };
 
     return (
-      <>
-        <Card>
-          <Icon
-            style={{textAlign: 'center'}}
-            name="local-gas-station"
-            size={200}
-            color="#000"
-          />
-          <Text>Etanol:</Text>
-          <TextInputMask
-            type={'money'}
-            value={etanol.toString()}
-            onChangeText={etanol => handleForm({etanol})}
-          />
-          <Text>Gasolina:</Text>
-          <TextInputMask
-            type={'money'}
-            value={gasolina.toString()}
-            onChangeText={gasolina => handleForm({gasolina})}
-          />
-
-          <Button onPress={() => calculate()}>Calcular</Button>
-          <Text style={styles.paragraph}>{resultado}</Text>
-        </Card>
-      </>
+      <Layout style={{flex: 1, backgroundColor: 'black'}}>
+        <ScrollView>
+          {films.map((film, index) => (
+            <Card onPress={() => navigateScreen(film.id)} key={index}>
+              <Text style={styles.title}>{film.title}</Text>
+              <Text>Episode {film.episode_id.toString()}</Text>
+            </Card>
+          ))}
+        </ScrollView>
+      </Layout>
     );
   }
 }
@@ -61,6 +49,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: '10',
     padding: 8,
+  },
+  title: {
+    fontSize: 20,
   },
   paragraph: {
     margin: 24,
